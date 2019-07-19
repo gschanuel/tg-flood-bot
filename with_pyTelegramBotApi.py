@@ -57,7 +57,7 @@ def noflood(user_id, chat_id):
 #@bot.message_handler(content_types=['photo', 'sticker', 'video'])
 @bot.message_handler(func=lambda message: True)
 def handle_gifs(message):
-    print ("[!] " + str(message.chat.id) + ": " + str(message.message_id))
+    print ("[!] " + str(message.chat.id) + ": " + str(message.message_id) + " => " + message.text )
     data.append(str(message.chat.id)+":"+str(message.from_user.id)+":"+str(message.message_id))
     Timer(msg_interval, noflood, [str(message.from_user.id), str(message.chat.id)]).start()
 
