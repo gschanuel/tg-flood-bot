@@ -7,15 +7,26 @@ import time
 from threading import Thread, Timer
 from settings import TOKEN, msg_flood, msg_interval
 from telegram.ext import Updater, MessageHandler, Filters
+from random import randint
 
 data = []
-
+switch = []
+xinga=["paquita do capeta!", "espantalho do fandangos", "bife de rato", "saco de vacilo", "saco de lixo de peruca", "geladinho de chorume", "bafo de bunda", "metralhadora de bosta", "sofá de zona", "filhote de lombriga", "cara de cu com cãibra", "vai coçar o cu com serrote", "enfia um rojão no cu e sai voando", "você não vale o peido de uma jumenta", "você nasceu pelo cu", "vai chupar um prego até virar tachinha", "vai arrastar o cu na brita", "você come pizza com colher", "arrombado do caralho", "chifrudo", "sua mãe tem pelo no dente", "o padre te benzeu com agua parada", "seu monte de esterco", "seu pai vende carta de magic roubada pra ver site porno na lan house"]
 def logger(bot, update):
     #bot.send_message(chat_id=update.message.chat_id, text=msg)
     msg=str(update.message.chat_id)+":"+str(update.message.from_user.id)+":"+str(update.message.message_id)
     print ("[!][logger] " + msg)
     data.append(msg)
     Timer(msg_interval, noflood, [bot, update]).start()
+
+def deleteMsgs(bot, update, msgIDs):
+    chat_id=str(update.message.chat_id)
+    user_id=str(update.message.from_user.id)
+    for msg in msgIDs[msg_flood:]:
+        Thread(target=deleteMsg, args=(bot, update, int(msg),),).start()
+    msg="[!] Cala a boca " + str(update.message.from_user.first_name) + ", " + str(xinga[randint(0, 23)]) + "!"
+    bot.send_message(chat_id,msg)	
+        
 
 def deleteMsg(bot, update, msgId):
     chat_id=update.message.chat_id
@@ -34,11 +45,12 @@ def noflood(bot, update):
             msgIds.append((data[i].split(":")[2]))
             counter += 1
     if counter >= msg_flood:
-        msg="[!] Cala a boca " + str(update.message.from_user.first_name) + " viado!"
-        bot.send_message(chat_id,msg)	
+#        msg="[!] Cala a boca " + str(update.message.from_user.first_name) + ", " + str(xinga[randint(0, 23)]) + "!"
+#        bot.send_message(chat_id,msg)	
         data.clear()
-        for msg in msgIds[msg_flood:]:
-            Thread(target=deleteMsg, args=(bot, update, int(msg),),).start()
+#        for msg in msgIds[msg_flood:]:
+#            Thread(target=deleteMsg, args=(bot, update, int(msg),),).start()
+        deleteMsgs(bot, update,msgIds)
     elif counter < msg_flood:
         data.clear()
 
