@@ -193,7 +193,7 @@ def get_quote(bot, update):
 #        print (query)
         cursor.execute(query)
         row = cursor.fetchone()
-        quote = "{}".format(row[0])
+        quote = "{} ```{}```".format(row[0], row[1])
         print (quote) 
     except Exception as e:
         print (str(e))
@@ -205,7 +205,7 @@ def frase_do_lawton(bot, update):
         chat_id = update.message.chat_id
         lawters = [
             'Tendeu né?', 'Nhííííííííííí', 'Flip Flop', 'Prestenção',
-            'Você não sabe o que é frio!', 'Sou autêntico e foda-se os "pobres"'
+            'Você não sabe o que é frio!'
             ]
         bot.send_message(chat_id, random.choice(lawters))
     except Exception as e:
@@ -222,7 +222,7 @@ flood_handler = MessageHandler(Filters.animation | Filters.photo | Filters.video
 dp.add_handler(CommandHandler("save", put_quote))
 dp.add_handler(CommandHandler("quote", get_quote))
 dp.add_handler(CommandHandler("lauters", frase_do_lawton))
-#dp.add_handler(flood_handler)
+dp.add_handler(flood_handler)
 dp.add_handler(log_handler)
 updater.start_polling()
 updater.idle()
