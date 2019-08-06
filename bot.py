@@ -9,62 +9,54 @@ from settings import TOKEN, msg_flood, msg_interval, con, cursor
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 import random
 
-xinga=["paquita do capeta!", "espantalho do fandangos", "bife de rato", "saco de vacilo", "saco de lixo de peruca", "geladinho de chorume", "bafo de bunda", "metralhadora de bosta", "sofá de zona", "filhote de lombriga", "cara de cu com cãibra", "vai coçar o cu com serrote", "enfia um rojão no cu e sai voando", "você não vale o peido de uma jumenta", "você nasceu pelo cu", "vai chupar um prego até virar tachinha", "vai arrastar o cu na brita", "você come pizza com colher", "arrombado do caralho", "chifrudo", "sua mãe tem pelo no dente", "o padre te benzeu com agua parada", "seu monte de esterco", "seu pai vende carta de magic roubada pra ver site porno na lan house"]
-
+data = []
 def logger(bot, update):
     msg=str(update.message.chat_id)+":"+str(update.message.from_user.id)+":"+str(update.message.message_id)
     print ("[!][logger] " + msg)
     data.append(msg)
-    Timer(msg_interval, noflood, [bot, update]).start()
+    noflood(bot, update)
+    Timer(msg_interval, timeout, [bot, update]).start()
 
 def deleteMsgs(bot, update, msgIDs):
     chat_id=str(update.message.chat_id)
     user_id=str(update.message.from_user.id)
     for msg in msgIDs[msg_flood:]:
         Thread(target=deleteMsg, args=(bot, update, int(msg),),).start()
-    msg="[!] Cala a boca " + str(update.message.from_user.first_name) + ", " + str(random.choice(xinga)) + "!"
+    xinga(bot, update)
+
+def xinga(bot, update):
+    query = "SELECT text FROM xingamento ORDER BY RAND() LIMIT 1"
+    cursor.execute(query)
+    row = cursor.fetchone()
+    quote = "__{}__".format(row[0])
+
+    msg="[!] Cala a boca {}, {}!".format(update.message.from_user.first_name, quote)
     bot.send_message(chat_id,msg)
 
 def deleteMsg(bot, update, msgId):
     chat_id=update.message.chat_id
     print ("[!][deleteMsg] Deleting => " + str(msgId))
     bot.delete_message(chat_id=chat_id, message_id=msgId)
+    xinga(bot, update)
 
 def noflood(bot, update):
     chat_id=str(update.message.chat_id)
     user_id=str(update.message.from_user.id)
     counter = 0
     msgIds = []
+    print ("[!] NoFlood check")
     for i, item in enumerate(data):
-#        print(chat_id+":"+user_id)
-        print(item)
         if (chat_id + ":" + user_id) in item:
             msgIds.append((data[i].split(":")[2]))
             counter += 1
     if counter >= msg_flood:
-#        msg="[!] Cala a boca " + str(update.message.from_user.first_name) + ", " + str(xinga[randint(0, 23)]) + "!"
-#        bot.send_message(chat_id,msg)
-        data.clear()
-#        for msg in msgIds[msg_flood:]:
-#            Thread(target=deleteMsg, args=(bot, update, int(msg),),).start()
-        deleteMsgs(bot, update,msgIds)
-    elif counter < msg_flood:
-        data.clear()
+        print ("[!] NoFlood action")
+        deleteMsg(bot, update, update.message.message_id)
 
-def on_new_animation(bot, update):
-    user_id=str(update.message.from_user.id)
-    chat_id=str(update.message.chat_id)
-    msg_id=str(update.message.message_id)
-
-    msg=chat_id+":"+user_id+":"+msg_id
-
-    print ("[!][new_msg] " + msg)
-    data.append(msg)
-    check_flood(bot, update) 
-    #data_limit=enumerate(data)
-    #check_flood(bot, update, data_limit) 
-    #Timer(msg_interval, check_flood, [bot, update, data_limit]).start()
-
+def timeout(bot, update):
+    print ("[!] timeout - {}".format(str(data)))
+    msg=str(update.message.chat_id)+":"+str(update.message.from_user.id)+":"+str(update.message.message_id)
+    data.remove(msg)
 
 def check_flood(bot, update):
     try:
@@ -151,67 +143,31 @@ def put_quote(bot, update):
     except Exception as e:
         print (str(e))
 
-#def get_quote(bot, update):
-#
-#    try:
-#        query = "SELECT message_ID FROM quote WHERE chat_ID = {} ORDER BY RAND() LIMIT 1".format(update.message.chat_id)
-#        cursor.execute(query)
-#        message_id=cursor.fetchone()[0]
-#        query = "SELECT text, first_name FROM log WHERE message_id = {}".format(message_id)
-##        print (query)
-#        cursor.execute(query)
-#        row = cursor.fetchone()
-#        quote = "{} - ```{}```".format(row[0], row[1])
-#        print (quote) 
-#    except Exception as e:
-#        print (str(e))
-#    print(row)
-#    bot.send_message(update.message.chat_id, quote, parse_mode='Markdown')
-
-def frase_do_lawton(bot, update):
-    try:
-        chat_id = update.message.chat_id
-        lawters = [
-            'Tendeu né?', 'Nhííííííííííí', 'Flip Flop', 'Prestenção',
-            'Você não sabe o que é frio!'
-            ]
-        bot.send_message(chat_id, random.choice(lawters))
-    except Exception as e:
-        print (str(e))
-
 def get_quote(bot, update):
     print(str(update))
     try:
-        quote_id=(update.message.text).split(" ")
-        if len(quote_id) > 1 :
-            query = "SELECT message_ID FROM quote WHERE chat_ID = {} AND id = {} ORDER BY RAND() LIMIT 1".format(update.message.chat_id,int(quote_id[1]))
+
+        if update.message.text == "/lauters":
+            query = "SELECT text FROM lauters ORDER BY RAND() LIMIT 1"
         else:
-            query = "SELECT message_ID FROM quote WHERE chat_ID = {} ORDER BY RAND() LIMIT 1".format(update.message.chat_id)
-        cursor.execute(query)
-        message_id=cursor.fetchone()[0]
-        query = "SELECT text, first_name FROM log WHERE message_id = {}".format(message_id)
+            quote_id=(update.message.text).split(" ")
+            if len(quote_id) > 1 :
+                query = "SELECT message_ID FROM quote WHERE chat_ID = {} AND id = {} ORDER BY RAND() LIMIT 1".format(update.message.chat_id,int(quote_id[1]))
+            else:
+                query = "SELECT message_ID FROM quote WHERE chat_ID = {} ORDER BY RAND() LIMIT 1".format(update.message.chat_id)
+    
+            cursor.execute(query)
+            message_id=cursor.fetchone()[0]
+            query = "SELECT text FROM log WHERE message_id = {}".format(message_id)
 #        print (query)
         cursor.execute(query)
         row = cursor.fetchone()
-        quote = "{} ```{}```".format(row[0], row[1])
+        quote = "__{}__".format(row[0])
         print (quote) 
     except Exception as e:
         print (str(e))
     print(row)
     bot.send_message(update.message.chat_id, quote, parse_mode='Markdown')
-
-def frase_do_lawton(bot, update):
-    try:
-        chat_id = update.message.chat_id
-        lawters = [
-            'Tendeu né?', 'Nhííííííííííí', 'Flip Flop', 'Prestenção',
-            'Você não sabe o que é frio!'
-            ]
-        bot.send_message(chat_id, random.choice(lawters))
-    except Exception as e:
-        print (str(e))
-
-
 
 updater = Updater(token=TOKEN)
 dp = updater.dispatcher
@@ -221,7 +177,7 @@ log_handler = MessageHandler(Filters.all, logging)
 flood_handler = MessageHandler(Filters.animation | Filters.photo | Filters.video, logger)
 dp.add_handler(CommandHandler("save", put_quote))
 dp.add_handler(CommandHandler("quote", get_quote))
-dp.add_handler(CommandHandler("lauters", frase_do_lawton))
+dp.add_handler(CommandHandler("lauters", get_quote))
 dp.add_handler(flood_handler)
 dp.add_handler(log_handler)
 updater.start_polling()
