@@ -5,10 +5,11 @@ References:
 """
 import datetime
 import time
-# import telegram 
+import telegram 
 from threading import Thread, Timer
 from settings import TOKEN, msg_flood, msg_interval, con, cursor, botName
-from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
+from telegram.ext import Updater, MessageHandler, Filters, CommandHandler, CallbackQueryHandler
+# from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 import random
 
 import logging
@@ -187,6 +188,33 @@ def list_quotes(bot, update):
     except Exception as e:
         logger.info(str(e))
 
+def call_bot(bot, update):
+    try:
+        msg = ("Quer falar em particular comigo?\n")
+    
+        start_bot_keyboard = [
+                [telegram.InlineKeyboardButton(text='Siiiiiiiim, seu lindo!',url="https://t.me/blv_dev_bot?start=payload")],
+        ]
+        reply_kb_markup = telegram.InlineKeyboardMarkup(start_bot_keyboard, resize_keyboard=True, one_time_keyboard=True)
+    
+        bot.send_message(update.message.chat_id, msg, reply_markup=reply_kb_markup) 
+    except Exception as e:
+        logger.info(str(e))
+    
+
+def start_bot(bot, update):
+    try:
+        msg = ("Aqui está a lista de comandos que você pode usar no grupo:\n")
+        msg += ("/save: Respondert uma mensagem com **/save** vai salva-la\n")
+        msg += ("/fester: Pra iniciar essa conversa (e eu poder falar em particular com você)\n")
+        msg += ("/quote: Vai trazer uma frase aleatória que foi salva anteriormente\n")
+        msg += ("/quote X: Vai trazer a frase número X\n")
+        msg += ("/lauters: Traz uma frase do Lawto\n")
+        msg += ("/list: Mostro pra você todas as frases salvas e seus respectivos números")
+        bot.send_message(update.message.from_user.id, msg)
+    except Exception as e:
+        logger.info(str(e))
+
 
 try:
     updater = Updater(token=TOKEN)
@@ -195,12 +223,15 @@ try:
     log_handler = MessageHandler(Filters.all, logging)
     flood_handler = MessageHandler(Filters.animation | Filters.photo | Filters.video, on_new_animation)
     save_handler = CommandHandler("save", put_quote)
+    start_handler = CommandHandler("start", start_bot)
+    callbot_handler = CommandHandler("fester", call_bot)
     quote_handler = CommandHandler("quote", get_quote)
     lauters_handler = CommandHandler("lauters", get_quote)
     list_quotes_handler = CommandHandler("list", list_quotes)
 
     dp.add_handler(list_quotes_handler)
     dp.add_handler(save_handler)
+    dp.add_handler(start_handler)
     dp.add_handler(quote_handler)
     dp.add_handler(lauters_handler)
     dp.add_handler(flood_handler)
