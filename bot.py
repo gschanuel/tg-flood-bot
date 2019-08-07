@@ -14,7 +14,7 @@ import random
 import logging
 from systemd.journal import JournaldLogHandler
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("botDev")
 journald_handler = JournaldLogHandler()
 
 journald_handler.setFormatter(logging.Formatter('[%(levelname)s] %(message)s'))
@@ -22,7 +22,6 @@ journald_handler.setFormatter(logging.Formatter('[%(levelname)s] %(message)s'))
 logger.addHandler(journald_handler)
 
 logger.setLevel(logging.DEBUG)
-
 
 
 flood_counter = []
@@ -109,7 +108,7 @@ def check_flood(bot, update):
 
 
 def timeout(bot, update):
-    logger.info("[!][timeout]")
+    # logger.info("[!][timeout]")
     try:
         # logger.info("[!] timeout - flood_counter: {}".format(flood_counter))
         # logger.info("[!] timeout - data: {}".format(data))
@@ -121,19 +120,16 @@ def timeout(bot, update):
 
 
 def logging(bot, update):
-    logger.info("[!][logging]")
-    logger.info("# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # ")
-    logger.info(str(update))
-    logger.info(" ")
     try:
         photo = ""
         query = ("INSERT INTO log (message_id, date, chat_id, text, photo, from_id, first_name, last_name, username) VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')").format(update.message.message_id, str(update.message.date), update.message.chat.id, str(update.message.text), photo, update.message.from_user.id, update.message.from_user.first_name, update.message.from_user.last_name, update.message.from_user.username)
 # else:
 #     photo = update.message.photo.file_id
-# logger.info(photo)
+# logger.info(photo) 
 #     logger.info(query)
         cursor.execute(query)
         con.commit()
+        logger.info("{}:{}:{}".format(update.message.chat.id,update.message.from_user.first_name,update.message.text))
     except Exception as e:
         logger.info(str(e))
 
@@ -146,7 +142,8 @@ def put_quote(bot, update):
         query = ("INSERT INTO quote (message_id, chat_id) VALUES ({}, {})").format(message_id, update.message.chat_id)
         cursor.execute(query)
         con.commit()
-        logger.info("OK")
+        logger.info("{} - OK".format(cursor.lastrowid))
+        bot.send_message(update.message.chat.id, "Salvei \"{}\" com id {}".format(update.message.reply_to_message.text, cursor.lastrowid))
     except Exception as e:
         logger.info(str(e))
 
@@ -170,10 +167,10 @@ def get_quote(bot, update):
         cursor.execute(query)
         row = cursor.fetchone()
         quote = "__{}__".format(row[0])
-        logger.info(quote) 
+#        logger.info(quote) 
     except Exception as e:
         logger.info(str(e))
-    logger.info(row)
+#    logger.info(row)
     bot.send_message(update.message.chat_id, quote, parse_mode='Markdown')
 
 
