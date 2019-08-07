@@ -7,14 +7,14 @@ import datetime
 import time
 # import telegram 
 from threading import Thread, Timer
-from settings import TOKEN, msg_flood, msg_interval, con, cursor
+from settings import TOKEN, msg_flood, msg_interval, con, cursor, botName
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 import random
 
 import logging
 from systemd.journal import JournaldLogHandler
 
-logger = logging.getLogger("botDev")
+logger = logging.getLogger(botName)
 journald_handler = JournaldLogHandler()
 
 journald_handler.setFormatter(logging.Formatter('[%(levelname)s] %(message)s'))
