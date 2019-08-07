@@ -97,7 +97,7 @@ def check_flood(bot, update):
         for i, item in enumerate(flood_counter):
             if (chat_id + ":" + user_id) in item:
                 # msgIds.append((flood_counter[i].split(":")[2]))
-                counter+= 1
+                counter += 1
         if counter > msg_flood:
             logger.info("[!] Flood in action: {} ({})".format(user_id, counter))
             # Thread(target = deleteMsg, args = (bot, update, update.message.message_id), ).start()
@@ -129,7 +129,7 @@ def logging(bot, update):
 #     logger.info(query)
         cursor.execute(query)
         con.commit()
-        logger.info("{}:{}:{}".format(update.message.chat.id,update.message.from_user.first_name,update.message.text))
+        logger.info("{}:{}:{}".format(update.message.chat.id, update.message.from_user.first_name, update.message.text))
     except Exception as e:
         logger.info(str(e))
 
@@ -138,7 +138,6 @@ def put_quote(bot, update):
     logger.info("[!][put_quote]")
     try:
         message_id = update.message.reply_to_message.message_id
-        logger.info(message_id)
         query = ("INSERT INTO quote (message_id, chat_id) VALUES ({}, {})").format(message_id, update.message.chat_id)
         cursor.execute(query)
         con.commit()
@@ -150,6 +149,7 @@ def put_quote(bot, update):
 
 def get_quote(bot, update):
     logger.info("[!][get_quote]")
+    print("[!][get_quote]")
     try:
         if update.message.text == "/lauters":
             query = "SELECT text FROM lauters ORDER BY RAND() LIMIT 1"
@@ -174,6 +174,20 @@ def get_quote(bot, update):
     bot.send_message(update.message.chat_id, quote, parse_mode='Markdown')
 
 
+def list_quotes(bot, update):
+    print("[!] list_quotes")
+    quotes_list = ""
+    try:
+        query = "SELECT quote.id, log.text FROM quote, log WHERE quote.chat_id = {} AND quote.message_id=log.message_id".format(update.message.chat_id)
+        cursor.execute(query)
+        results = cursor.fetchall()
+        for result in results:
+            quotes_list += "#{}: {} \n".format(result[0], result[1])
+        bot.send_message(update.message.from_user.id, quotes_list)
+    except Exception as e:
+        logger.info(str(e))
+
+
 try:
     updater = Updater(token=TOKEN)
     dp = updater.dispatcher
@@ -183,13 +197,15 @@ try:
     save_handler = CommandHandler("save", put_quote)
     quote_handler = CommandHandler("quote", get_quote)
     lauters_handler = CommandHandler("lauters", get_quote)
-    
+    list_quotes_handler = CommandHandler("list", list_quotes)
+
+    dp.add_handler(list_quotes_handler)
     dp.add_handler(save_handler)
     dp.add_handler(quote_handler)
     dp.add_handler(lauters_handler)
     dp.add_handler(flood_handler)
     dp.add_handler(log_handler)
-    
+
     updater.start_polling()
     updater.idle()
 except Exception as e:
