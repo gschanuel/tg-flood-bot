@@ -139,7 +139,7 @@ def put_quote(bot, update):
     logger.info("[!][put_quote]")
     try:
         message_id = update.message.reply_to_message.message_id
-        query = ("INSERT INTO quote (message_id, chat_id) VALUES ({}, {})").format(message_id, update.message.chat_id)
+        query = ("INSERT INTO quote (message_id, chat_id) VALUES ('{}', '{}')").format(message_id, update.message.chat_id)
         cursor.execute(query)
         con.commit()
         logger.info("{} - OK".format(cursor.lastrowid))
@@ -169,11 +169,12 @@ def get_quote(bot, update):
         row = cursor.fetchone()
         quote = "__{}__".format(row[0])
 #        logger.info(quote) 
+
+        bot.send_message(update.message.chat_id, quote, parse_mode='Markdown')
+
     except Exception as e:
         logger.info(str(e))
 #    logger.info(row)
-    bot.send_message(update.message.chat_id, quote, parse_mode='Markdown')
-
 
 def list_quotes(bot, update):
     print("[!] list_quotes")
@@ -189,12 +190,12 @@ def list_quotes(bot, update):
         logger.info(str(e))
 
 def call_bot(bot, update):
+    logger.info("[!] call_bot")
     try:
         msg = ("Quer falar em particular comigo?\n")
     
-        start_bot_keyboard = [
-                [telegram.InlineKeyboardButton(text='Siiiiiiiim, seu lindo!',url="https://t.me/blv_dev_bot?start=payload")],
-        ]
+        start_bot_keyboard = [[telegram.InlineKeyboardButton(text='Siiiiiiiim, seu lindo!', url="https://t.me/{}?start=payload".format(botName))]]
+        
         reply_kb_markup = telegram.InlineKeyboardMarkup(start_bot_keyboard, resize_keyboard=True, one_time_keyboard=True)
     
         bot.send_message(update.message.chat_id, msg, reply_markup=reply_kb_markup) 
@@ -205,13 +206,13 @@ def call_bot(bot, update):
 def start_bot(bot, update):
     try:
         msg = ("Aqui está a lista de comandos que você pode usar no grupo:\n")
-        msg += ("/save: Respondert uma mensagem com **/save** vai salva-la\n")
+        msg += ("/save: Responder uma mensagem com **/save** vai salva-la\n")
         msg += ("/fester: Pra iniciar essa conversa (e eu poder falar em particular com você)\n")
         msg += ("/quote: Vai trazer uma frase aleatória que foi salva anteriormente\n")
         msg += ("/quote X: Vai trazer a frase número X\n")
         msg += ("/lauters: Traz uma frase do Lawto\n")
         msg += ("/list: Mostro pra você todas as frases salvas e seus respectivos números")
-        bot.send_message(update.message.from_user.id, msg)
+        bot.send_message(update.message.from_user.id, msg, parse_mode='Markdown')
     except Exception as e:
         logger.info(str(e))
 
@@ -224,7 +225,7 @@ try:
     flood_handler = MessageHandler(Filters.animation | Filters.photo | Filters.video, on_new_animation)
     save_handler = CommandHandler("save", put_quote)
     start_handler = CommandHandler("start", start_bot)
-    callbot_handler = CommandHandler("fester", call_bot)
+    callbot_handler = CommandHandler("help", call_bot)
     quote_handler = CommandHandler("quote", get_quote)
     lauters_handler = CommandHandler("lauters", get_quote)
     list_quotes_handler = CommandHandler("list", list_quotes)
@@ -232,6 +233,7 @@ try:
     dp.add_handler(list_quotes_handler)
     dp.add_handler(save_handler)
     dp.add_handler(start_handler)
+    dp.add_handler(callbot_handler)
     dp.add_handler(quote_handler)
     dp.add_handler(lauters_handler)
     dp.add_handler(flood_handler)
