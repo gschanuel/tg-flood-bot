@@ -207,7 +207,7 @@ def start_bot(bot, update):
     try:
         msg = ("Aqui está a lista de comandos que você pode usar no grupo:\n")
         msg += ("/save: Responder uma mensagem com **/save** vai salva-la\n")
-        msg += ("/fester: Pra iniciar essa conversa (e eu poder falar em particular com você)\n")
+        msg += ("/help: Pra iniciar essa conversa (e eu poder falar em particular com você)\n")
         msg += ("/quote: Vai trazer uma frase aleatória que foi salva anteriormente\n")
         msg += ("/quote X: Vai trazer a frase número X\n")
         msg += ("/lauters: Traz uma frase do Lawto\n")
