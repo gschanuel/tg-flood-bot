@@ -11,9 +11,50 @@ from settings import TOKEN, msg_flood, msg_interval, con, cursor, botName
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler, CallbackQueryHandler
 # from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 import random
-
 import logging
 from systemd.journal import JournaldLogHandler
+from chatterbot import ChatBot
+from chatterbot.trainers import ChatterBotCorpusTrainer
+from chatterbot import comparisons
+from chatterbot import response_selection
+
+from googletrans import Translator
+translator = Translator()
+
+
+
+chatbot = ChatBot(
+   "Fester_Addamns",
+    storage_adapter='chatterbot.storage.SQLStorageAdapter',
+    database_uri='sqlite:///database.db',
+    logic_adapters=[
+        {
+            "import_path": "chatterbot.logic.BestMatch",
+            #"statement_comparison_function": chatterbot.comparisons.LevenshteinDistance,
+            "statement_comparison_function": comparisons.SpacySimilarity,
+            "response_selection_method": response_selection.get_random_response,
+            "maximum_similarity_threshold": 0.81
+        }
+    ]
+)
+
+
+trainer = ChatterBotCorpusTrainer(chatbot)
+trainer.train(
+    "chatterbot.corpus.english"
+)
+#trainer.train(
+#    "chatterbot.corpus.portuguese.compliment",
+#    "chatterbot.corpus.portuguese.conversations",
+#    "chatterbot.corpus.portuguese.games",
+#    "chatterbot.corpus.portuguese.greetings",
+#    "chatterbot.corpus.portuguese.money",
+#    "chatterbot.corpus.portuguese.proverbs",
+#    "chatterbot.corpus.portuguese.suggestions",
+#    "chatterbot.corpus.portuguese.trivia"
+#)
+
+
 
 logger = logging.getLogger(botName)
 journald_handler = JournaldLogHandler()
@@ -217,6 +258,20 @@ def start_bot(bot, update):
         logger.info(str(e))
 
 
+def chat_bot(bot, update):
+    logger.info("[!] chat_bot: {}".format(update.message.text))
+    try:
+        user_input = translator.translate(update.message.text, src="pt", dest="en")
+        print(str(user_input.text))
+        bot_response = chatbot.get_response(str(user_input.text))
+
+        pt_response = translator.translate(str(bot_response.text), src="en", dest="pt")
+        print(str(pt_response.text))
+        bot.send_message(update.message.chat.id, str(pt_response.text))
+    except Exception as e:
+        print(str(e))
+
+
 try:
     updater = Updater(token=TOKEN)
     dp = updater.dispatcher
@@ -229,6 +284,7 @@ try:
     quote_handler = CommandHandler("quote", get_quote)
     lauters_handler = CommandHandler("lauters", get_quote)
     list_quotes_handler = CommandHandler("list", list_quotes)
+    chat_handler = MessageHandler(Filters.text, chat_bot)
 
     dp.add_handler(list_quotes_handler)
     dp.add_handler(save_handler)
@@ -237,6 +293,7 @@ try:
     dp.add_handler(quote_handler)
     dp.add_handler(lauters_handler)
     dp.add_handler(flood_handler)
+    dp.add_handler(chat_handler)
     dp.add_handler(log_handler)
 
     updater.start_polling()
