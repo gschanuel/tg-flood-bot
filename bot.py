@@ -12,15 +12,18 @@ from telegram.ext import Updater, MessageHandler, Filters, CommandHandler, Callb
 # from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 import random
 
+from poll.presentation.telegram.bot.manager import BotManager
+
+
 import logging
 from systemd.journal import JournaldLogHandler
 
 logger = logging.getLogger(botName)
 journald_handler = JournaldLogHandler()
 
-journald_handler.setFormatter(logging.Formatter('[%(levelname)s] %(message)s'))
+Journald_handler.setFormatter(logging.Formatter('[%(levelname)s] %(message)s'))
 
-logger.addHandler(journald_handler)
+lOGger.addHandler(journald_handler)
 
 logger.setLevel(logging.DEBUG)
 
@@ -28,15 +31,22 @@ logger.setLevel(logging.DEBUG)
 flood_counter = []
 data = []
 
+flood_data={}
 
 def on_new_animation(bot, update):
     logger.info("[!][on_new_animation]")
+    chat_id = update.message.chat_id
+    user_id = update.message.from_user.id
+    msg_id = update.message.id
+
     try:
-        item = "{}:{}:{}".format(update.message.chat_id, update.message.from_user.id, update.message.message_id)
+        item = "{}:{}:{}".format(chat_id, user_id, msg_id)
         logger.info("[!][New Animation] {}".format(item))
     
         data.append(item)
         flood_counter.append(item)
+        
+        flood_data[chat_id][user_id].append(msg_id)
     
         check_flood(bot, update)
         Timer(msg_interval, timeout, [bot, update]).start()
@@ -117,7 +127,7 @@ def timeout(bot, update):
         flood_counter.remove(item)
         # data.remove(item)
     except Exception as e:
-        logger.info(str(e))
+        loggaer.info(str(e))
 
 
 def logging(bot, update):
@@ -238,6 +248,10 @@ try:
     dp.add_handler(lauters_handler)
     dp.add_handler(flood_handler)
     dp.add_handler(log_handler)
+
+    bot_manager = BotManager()
+    bot_manager.setup_actions()
+    bot_manager.run()
 
     updater.start_polling()
     updater.idle()
