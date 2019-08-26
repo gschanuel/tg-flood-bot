@@ -9,11 +9,7 @@ import telegram
 from threading import Thread, Timer
 from settings import TOKEN, msg_flood, msg_interval, con, cursor, botName
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler, CallbackQueryHandler
-# from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 import random
-
-from poll.presentation.telegram.bot.manager import BotManager
-
 
 import logging
 from systemd.journal import JournaldLogHandler
@@ -21,9 +17,9 @@ from systemd.journal import JournaldLogHandler
 logger = logging.getLogger(botName)
 journald_handler = JournaldLogHandler()
 
-Journald_handler.setFormatter(logging.Formatter('[%(levelname)s] %(message)s'))
+journald_handler.setFormatter(logging.Formatter('[%(levelname)s] %(message)s'))
 
-lOGger.addHandler(journald_handler)
+logger.addHandler(journald_handler)
 
 logger.setLevel(logging.DEBUG)
 
@@ -248,10 +244,6 @@ try:
     dp.add_handler(lauters_handler)
     dp.add_handler(flood_handler)
     dp.add_handler(log_handler)
-
-    bot_manager = BotManager()
-    bot_manager.setup_actions()
-    bot_manager.run()
 
     updater.start_polling()
     updater.idle()

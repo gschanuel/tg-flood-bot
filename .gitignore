@@ -1,2 +1,5 @@
 settings.py
 __pycache__/*
+database.db
+sentence_tokenizer.pickle
+.gitignore
