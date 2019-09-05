@@ -47,7 +47,7 @@ def on_new_animation(bot, update):
         check_flood(bot, update)
         Timer(msg_interval, timeout, [bot, update]).start()
     except Exception as e:
-        logger.info(str(e))
+        logger.exception(str(e))
 
 
 def deleteMsgs(bot, update, msgIDs):
@@ -61,7 +61,7 @@ def deleteMsgs(bot, update, msgIDs):
             data.remove(item)
         xinga(bot, update)
     except Exception as e:
-        logger.info(str(e))
+        logger.exception(str(e))
 
 
 def xinga(bot, update):
@@ -75,7 +75,7 @@ def xinga(bot, update):
         msg = "[!] Cala a boca {}, {}!".format(update.message.from_user.first_name, quote)
         bot.send_message(update.message.chat_id, msg, parse_mode='Markdown')
     except Exception as e:
-        logger.info(str(e))
+        logger.exception(str(e))
 
 
 def deleteMsg(bot, update, msgId):
@@ -88,7 +88,7 @@ def deleteMsg(bot, update, msgId):
         item = "{}:{}:{}".format(update.message.chat_id, update.message.from_user.id, msgId)
         data.remove(item)
     except Exception as e:
-        logger.info(str(e))
+        logger.exception(str(e))
 
 
 def check_flood(bot, update):
@@ -111,7 +111,7 @@ def check_flood(bot, update):
             deleteMsg(bot, update, update.message.message_id)
             # deleteMsgs(bot, update, msgIds)
     except Exception as e:
-        logger.info(str(e))
+        logger.exception(str(e))
 
 
 def timeout(bot, update):
@@ -138,7 +138,7 @@ def logging(bot, update):
         con.commit()
         logger.info("{}:{}:{}".format(update.message.chat.id, update.message.from_user.first_name, update.message.text))
     except Exception as e:
-        logger.info(str(e))
+        logger.exception(str(e))
 
 
 def put_quote(bot, update):
@@ -151,7 +151,7 @@ def put_quote(bot, update):
         logger.info("{} - OK".format(cursor.lastrowid))
         bot.send_message(update.message.chat.id, "Salvei \"{}\" com id {}".format(update.message.reply_to_message.text, cursor.lastrowid))
     except Exception as e:
-        logger.info(str(e))
+        logger.exception(str(e))
 
 
 def get_quote(bot, update):
@@ -179,7 +179,7 @@ def get_quote(bot, update):
         bot.send_message(update.message.chat_id, quote, parse_mode='Markdown')
 
     except Exception as e:
-        logger.info(str(e))
+        logger.exception(str(e))
 #    logger.info(row)
 
 def list_quotes(bot, update):
@@ -193,7 +193,7 @@ def list_quotes(bot, update):
             quotes_list += "#{}: {} \n".format(result[0], result[1])
         bot.send_message(update.message.from_user.id, quotes_list)
     except Exception as e:
-        logger.info(str(e))
+        logger.exception(str(e))
 
 def call_bot(bot, update):
     logger.info("[!] call_bot")
@@ -206,7 +206,7 @@ def call_bot(bot, update):
     
         bot.send_message(update.message.chat_id, msg, reply_markup=reply_kb_markup) 
     except Exception as e:
-        logger.info(str(e))
+        logger.exception(str(e))
     
 
 def start_bot(bot, update):
@@ -220,7 +220,7 @@ def start_bot(bot, update):
         msg += ("/list: Mostro pra você todas as frases salvas e seus respectivos números")
         bot.send_message(update.message.from_user.id, msg, parse_mode='Markdown')
     except Exception as e:
-        logger.info(str(e))
+        logger.exception(str(e))
 
 
 try:
@@ -248,4 +248,4 @@ try:
     updater.start_polling()
     updater.idle()
 except Exception as e:
-    logger.info(str(e))
+    logger.exception(str(e))
