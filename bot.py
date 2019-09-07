@@ -9,6 +9,7 @@ import telegram
 from threading import Thread, Timer
 from settings import TOKEN, msg_flood, msg_interval, con, cursor, botName
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler, CallbackQueryHandler
+from sys import exit
 import random
 
 import logging
@@ -48,6 +49,7 @@ def on_new_animation(bot, update):
         Timer(msg_interval, timeout, [bot, update]).start()
     except Exception as e:
         logger.exception(str(e))
+        sys.exit(1)
 
 
 def deleteMsgs(bot, update, msgIDs):
@@ -62,6 +64,7 @@ def deleteMsgs(bot, update, msgIDs):
         xinga(bot, update)
     except Exception as e:
         logger.exception(str(e))
+        sys.exit(1)
 
 
 def xinga(bot, update):
@@ -76,6 +79,7 @@ def xinga(bot, update):
         bot.send_message(update.message.chat_id, msg, parse_mode='Markdown')
     except Exception as e:
         logger.exception(str(e))
+        sys.exit(1)
 
 
 def deleteMsg(bot, update, msgId):
@@ -89,6 +93,7 @@ def deleteMsg(bot, update, msgId):
         data.remove(item)
     except Exception as e:
         logger.exception(str(e))
+        sys.exit(1)
 
 
 def check_flood(bot, update):
@@ -112,13 +117,14 @@ def check_flood(bot, update):
             # deleteMsgs(bot, update, msgIds)
     except Exception as e:
         logger.exception(str(e))
+        sys.exit(1)
 
 
 def timeout(bot, update):
-    # logger.info("[!][timeout]")
+    logger.info("[!][timeout]")
     try:
-        # logger.info("[!] timeout - flood_counter: {}".format(flood_counter))
-        # logger.info("[!] timeout - data: {}".format(data))
+        logger.info("[!] timeout - flood_counter: {}".format(flood_counter))
+        logger.info("[!] timeout - data: {}".format(data))
         item = "{}:{}:{}".format(update.message.chat_id, update.message.from_user.id, update.message.message_id)
         flood_counter.remove(item)
         # data.remove(item)
@@ -132,13 +138,14 @@ def logging(bot, update):
         query = ("INSERT INTO log (message_id, date, chat_id, text, photo, from_id, first_name, last_name, username) VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')").format(update.message.message_id, str(update.message.date), update.message.chat.id, str(update.message.text), photo, update.message.from_user.id, update.message.from_user.first_name, update.message.from_user.last_name, update.message.from_user.username)
 # else:
 #     photo = update.message.photo.file_id
-# logger.info(photo) 
+logger.info(photo) 
 #     logger.info(query)
         cursor.execute(query)
         con.commit()
         logger.info("{}:{}:{}".format(update.message.chat.id, update.message.from_user.first_name, update.message.text))
     except Exception as e:
         logger.exception(str(e))
+        sys.exit(1)
 
 
 def put_quote(bot, update):
@@ -152,6 +159,7 @@ def put_quote(bot, update):
         bot.send_message(update.message.chat.id, "Salvei \"{}\" com id {}".format(update.message.reply_to_message.text, cursor.lastrowid))
     except Exception as e:
         logger.exception(str(e))
+        sys.exit(1)
 
 
 def get_quote(bot, update):
@@ -180,6 +188,7 @@ def get_quote(bot, update):
 
     except Exception as e:
         logger.exception(str(e))
+        sys.exit(1)
 #    logger.info(row)
 
 def list_quotes(bot, update):
@@ -194,6 +203,7 @@ def list_quotes(bot, update):
         bot.send_message(update.message.from_user.id, quotes_list)
     except Exception as e:
         logger.exception(str(e))
+        sys.exit(1)
 
 def call_bot(bot, update):
     logger.info("[!] call_bot")
@@ -207,6 +217,7 @@ def call_bot(bot, update):
         bot.send_message(update.message.chat_id, msg, reply_markup=reply_kb_markup) 
     except Exception as e:
         logger.exception(str(e))
+        sys.exit(1)
     
 
 def start_bot(bot, update):
@@ -221,6 +232,7 @@ def start_bot(bot, update):
         bot.send_message(update.message.from_user.id, msg, parse_mode='Markdown')
     except Exception as e:
         logger.exception(str(e))
+        sys.exit(1)
 
 
 try:
@@ -249,3 +261,4 @@ try:
     updater.idle()
 except Exception as e:
     logger.exception(str(e))
+    sys.exit(1)
