@@ -138,7 +138,7 @@ def logging(bot, update):
         query = ("INSERT INTO log (message_id, date, chat_id, text, photo, from_id, first_name, last_name, username) VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')").format(update.message.message_id, str(update.message.date), update.message.chat.id, str(update.message.text), photo, update.message.from_user.id, update.message.from_user.first_name, update.message.from_user.last_name, update.message.from_user.username)
 # else:
 #     photo = update.message.photo.file_id
-logger.info(photo) 
+#logger.info(photo) 
 #     logger.info(query)
         cursor.execute(query)
         con.commit()
