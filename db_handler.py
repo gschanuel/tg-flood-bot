@@ -1,14 +1,14 @@
 from settings import user, passwd, database
 import mysql.connector
-from mysql.connector import Error
+#from mysql.connector import Error
 import threading
 
 some_lock = threading.Lock()
 print("start")
 
-class MySQL_DB:
+class MySQL_DB():
     print("class")
-
+    
     #"""Database interface"""
     def __init__(self):
         self.connect_mysql()
@@ -49,23 +49,36 @@ class MySQL_DB:
             print("conectado")
         return self
 
-    @retry
-    def get_quote(self):
-        print("[!][get_quote]")
-        query = "SELECT text FROM lauters ORDER BY RAND() LIMIT 1"
-        self.cursor.execute(query)
-        row = self.cursor.fetchone()
-        print("__{}__".format(row[0]))
+ #   @retry
+ #   def get_quote(self):
+ #       print("[!][get_quote]")
+ #       query = "SELECT text FROM lauters ORDER BY RAND() LIMIT 1"
+ #       self.execute(query)
+ #       row = self.cursor.fetchone()
+ #       print("__{}__".format(row[0]))
     
+    def fetchall(self, query):
+        self.cursor.execute(query)
+        return self.cursor.fetchall()
+
+    def fetchone(self, query):
+        self.cursor.execute(query)
+        return self.cursor.fetchone()
+
+    def execute(self, query):
+        self.cursor.execute(query)
+        return self.con.commit()
+
     def __exit__(self):
         # do something
         if (self.con.is_connected()):
             self.cursor.close()
             self.con.close()
             print("Deu pau")
+
 if __name__ == "__main__":
     import time
     db = MySQL_DB()
-    db.get_quote()
+    #db.get_quote()
     time.sleep(5)
     db.get_quote()
