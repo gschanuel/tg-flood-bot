@@ -74,8 +74,7 @@ def xinga(bot, update):
     logger.info("[!][xinga]")
     try:
         query = "SELECT text FROM xingamento ORDER BY RAND() LIMIT 1"
-        db.cursor.execute(query)
-        row = db.cursor.fetchone()
+        row = db.fetchone(query)
         quote = "__{}__".format(row[0])
 
         msg = "[!] Cala a boca {}, {}!".format(update.message.from_user.first_name, quote)
@@ -143,8 +142,7 @@ def logging(bot, update):
 #     photo = update.message.photo.file_id
 #logger.info(photo) 
 #     logger.info(query)
-        db.cursor.execute(query)
-        db.con.commit()
+        db.execute(query)
         logger.info("{}:{}:{}".format(update.message.chat.id, update.message.from_user.first_name, update.message.text))
     except Exception as e:
         logger.exception(str(e))
@@ -156,8 +154,7 @@ def put_quote(bot, update):
     try:
         message_id = update.message.reply_to_message.message_id
         query = ("INSERT INTO quote (message_id, chat_id) VALUES ('{}', '{}')").format(message_id, update.message.chat_id)
-        db.cursor.execute(query)
-        db.con.commit()
+        db.execute(query)
         logger.info("{} - OK".format(db.cursor.lastrowid))
         bot.send_message(update.message.chat.id, "Salvei \"{}\" com id {}".format(update.message.reply_to_message.text, db.cursor.lastrowid))
     except Exception as e:
@@ -178,12 +175,10 @@ def get_quote(bot, update):
             else:
                 query = "SELECT message_ID FROM quote WHERE chat_ID = {} ORDER BY RAND() LIMIT 1".format(update.message.chat_id)
     
-            db.cursor.execute(query)
-            message_id = db.cursor.fetchone()[0]
-            query = "SELECT text FROM log WHERE message_id = {}".format(message_id)
-#        logger.info(query)
-        db.cursor.execute(query)
-        row = db.cursor.fetchone()
+            message_id = db.fetchone(query)
+            query = "SELECT text FROM log WHERE message_id = {}".format(message_id[0])
+
+        row = db.fetchone(query)
         quote = "__{}__".format(row[0])
 #        logger.info(quote) 
 
@@ -199,8 +194,7 @@ def list_quotes(bot, update):
     quotes_list = ""
     try:
         query = "SELECT quote.id, log.text FROM quote, log WHERE quote.chat_id = {} AND quote.message_id=log.message_id".format(update.message.chat_id)
-        db.cursor.execute(query)
-        results = db.cursor.fetchall()
+        results = db.fetchall(query)
         for result in results:
             quotes_list += "#{}: {} \n".format(result[0], result[1])
         bot.send_message(update.message.from_user.id, quotes_list)
