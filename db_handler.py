@@ -56,15 +56,18 @@ class MySQL_DB():
  #       self.execute(query)
  #       row = self.cursor.fetchone()
  #       print("__{}__".format(row[0]))
-    
+     
+    @retry
     def fetchall(self, query):
         self.cursor.execute(query)
         return self.cursor.fetchall()
 
+    @retry
     def fetchone(self, query):
         self.cursor.execute(query)
         return self.cursor.fetchone()
 
+    @retry
     def execute(self, query):
         self.cursor.execute(query)
         return self.con.commit()
