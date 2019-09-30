@@ -7,13 +7,16 @@ import datetime
 import time
 import telegram 
 from threading import Thread, Timer
-from settings import TOKEN, msg_flood, msg_interval, con, cursor, botName
+from settings import TOKEN, msg_flood, msg_interval, botName 
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler, CallbackQueryHandler
 from sys import exit
+from db_handler import MySQL_DB
 import random
 
 import logging
 from systemd.journal import JournaldLogHandler
+
+db = MySQL_DB()
 
 logger = logging.getLogger(botName)
 journald_handler = JournaldLogHandler()
@@ -71,8 +74,7 @@ def xinga(bot, update):
     logger.info("[!][xinga]")
     try:
         query = "SELECT text FROM xingamento ORDER BY RAND() LIMIT 1"
-        cursor.execute(query)
-        row = cursor.fetchone()
+        row = db.fetchone(query)
         quote = "__{}__".format(row[0])
 
         msg = "[!] Cala a boca {}, {}!".format(update.message.from_user.first_name, quote)
@@ -140,8 +142,7 @@ def logging(bot, update):
 #     photo = update.message.photo.file_id
 #logger.info(photo) 
 #     logger.info(query)
-        cursor.execute(query)
-        con.commit()
+        db.execute(query)
         logger.info("{}:{}:{}".format(update.message.chat.id, update.message.from_user.first_name, update.message.text))
     except Exception as e:
         logger.exception(str(e))
@@ -153,10 +154,9 @@ def put_quote(bot, update):
     try:
         message_id = update.message.reply_to_message.message_id
         query = ("INSERT INTO quote (message_id, chat_id) VALUES ('{}', '{}')").format(message_id, update.message.chat_id)
-        cursor.execute(query)
-        con.commit()
-        logger.info("{} - OK".format(cursor.lastrowid))
-        bot.send_message(update.message.chat.id, "Salvei \"{}\" com id {}".format(update.message.reply_to_message.text, cursor.lastrowid))
+        db.execute(query)
+        logger.info("{} - OK".format(db.cursor.lastrowid))
+        bot.send_message(update.message.chat.id, "Salvei \"{}\" com id {}".format(update.message.reply_to_message.text, db.cursor.lastrowid))
     except Exception as e:
         logger.exception(str(e))
         sys.exit(1)
@@ -175,12 +175,10 @@ def get_quote(bot, update):
             else:
                 query = "SELECT message_ID FROM quote WHERE chat_ID = {} ORDER BY RAND() LIMIT 1".format(update.message.chat_id)
     
-            cursor.execute(query)
-            message_id = cursor.fetchone()[0]
-            query = "SELECT text FROM log WHERE message_id = {}".format(message_id)
-#        logger.info(query)
-        cursor.execute(query)
-        row = cursor.fetchone()
+            message_id = db.fetchone(query)
+            query = "SELECT text FROM log WHERE message_id = {}".format(message_id[0])
+
+        row = db.fetchone(query)
         quote = "__{}__".format(row[0])
 #        logger.info(quote) 
 
@@ -196,8 +194,7 @@ def list_quotes(bot, update):
     quotes_list = ""
     try:
         query = "SELECT quote.id, log.text FROM quote, log WHERE quote.chat_id = {} AND quote.message_id=log.message_id".format(update.message.chat_id)
-        cursor.execute(query)
-        results = cursor.fetchall()
+        results = db.fetchall(query)
         for result in results:
             quotes_list += "#{}: {} \n".format(result[0], result[1])
         bot.send_message(update.message.from_user.id, quotes_list)
